@@ -1,32 +1,83 @@
-﻿using stTrackerMVC.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using stTrackerMVC.Data;
+using stTrackerMVC.Models;
 
 namespace stTrackerMVC.Repositories
 {
-    public class CourseRepository
+    public class CourseRepository : ICourseRepository
     {
-        private List<Course> _courses;
-        public CourseRepository()
+        private readonly AppDbContext _context;
+
+        public CourseRepository(AppDbContext context)
         {
-            SetDefaultCourses();
+            _context = context;
         }
 
-        public void SetDefaultCourses()
+        public async Task InitializeDataAsync()
         {
-            var course1 = new Course(id: 1, "Math", "some description", "Ivanov");
-            var course2 = new Course(id: 2, "History", "world history", "Petrov");
-            var course3 = new Course(id: 3, "Computer Science", description: null, "Sidorov");
+            if (!await _context.Courses.AnyAsync())
+            {
+                var initialCourses = new List<Course>
+                {
+                    new Course
+                    {
+                        Id = 1,
+                        Name = "Математика",
+                        Description = "Основы алгебры и геометрии",
+                        ProfessorName = "Иванов И.И."
+                    },
+                    new Course
+                    {
+                        Id = 2,
+                        Name = "История",
+                        Description = "Всемирная история",
+                        ProfessorName = "Петрова П.П."
+                    },
+                    new Course
+                    {
+                        Id = 3,
+                        Name = "Информатика",
+                        Description = "Основы программирования",
+                        ProfessorName = "Сидоров С.С."
+                    }
+                };
 
-            _courses = [course1, course2, course3];
+                await _context.Courses.AddRangeAsync(initialCourses);
+
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public List<Course> GetCourses()
+        public async Task<IEnumerable<Course>> GetCoursesAsync()
         {
-            return _courses;
+            return await _context.Courses.ToListAsync();
         }
 
-        public void AddCourse(Course course)
+        public async Task AddCourseAsync(Course course)
         {
-            _courses.Add(course);
+            await _context.Courses.AddAsync(course);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Course?> GetCourseByIdAsync(int id)
+        {
+            return await _context.Courses.FindAsync(id);
+        }
+
+        public async Task UpdateCourseAsync(Course course)
+        {
+            _context.Courses.Update(course);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteCourseAsync(int id)
+        {
+            var course = await GetCourseByIdAsync(id);
+            if (course != null)
+            {
+                _context.Courses.Remove(course);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

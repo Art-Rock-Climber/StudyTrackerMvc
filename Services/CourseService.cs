@@ -3,23 +3,38 @@ using stTrackerMVC.Repositories;
 
 namespace stTrackerMVC.Services
 {
-    public class CourseService
+    public class CourseService : ICourseService
     {
-        private readonly CourseRepository _repository;
+        private readonly ICourseRepository _repository;
 
-        public CourseService()
+        public CourseService(ICourseRepository repository)
         {
-            _repository = new CourseRepository();
+            _repository = repository;
         }
 
-        public List<Course> GetCourses()
+        public async Task<IEnumerable<Course>> GetCoursesAsync()
         {
-            return _repository.GetCourses();
+            return await _repository.GetCoursesAsync();
         }
 
-        public void AddCourse(Course course)
+        public async Task AddCourseAsync(Course course)
         {
-            _repository.AddCourse(course);
+            await _repository.AddCourseAsync(course);
+        }
+
+        public async Task<Course?> GetCourseByIdAsync(int id)
+        {
+            return await _repository.GetCourseByIdAsync(id);
+        }
+
+        public async Task UpdateCourseAsync(Course course)
+        {
+            await _repository.UpdateCourseAsync(course);
+        }
+
+        public async Task DeleteCourseAsync(int id)
+        {
+            await _repository.DeleteCourseAsync(id);
         }
     }
 }

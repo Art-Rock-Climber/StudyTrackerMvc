@@ -16,10 +16,10 @@ namespace stTrackerMVC.Controllers
             _coursesVmBuilder = coursesVmBuilder;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var courcesVm = _coursesVmBuilder.GetCoursesVm();
-            return View(courcesVm);
+            var coursesVm = await _coursesVmBuilder.GetCoursesVmAsync();
+            return View(coursesVm);
         }
 
         public IActionResult Privacy()

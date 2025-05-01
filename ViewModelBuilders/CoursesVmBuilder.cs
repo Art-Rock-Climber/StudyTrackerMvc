@@ -6,16 +6,17 @@ namespace stTrackerMVC.ViewModelBuilders
 {
     public class CoursesVmBuilder
     {
-        private readonly CourseService _courseService;
-        public CoursesVmBuilder()
+        private readonly ICourseService _courseService;
+
+        public CoursesVmBuilder(ICourseService courseService)
         {
-            _courseService = new CourseService();
+            _courseService = courseService;
         }
 
-        public CoursesVm GetCoursesVm()
+        public async Task<CoursesVm> GetCoursesVmAsync()
         {
-            var courses = _courseService.GetCourses();
-            return new CoursesVm(courses);
+            var courses = await _courseService.GetCoursesAsync();
+            return new CoursesVm(courses.ToList());
         }
     }
 }

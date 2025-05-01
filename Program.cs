@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using stTrackerMVC.Data;
 using stTrackerMVC.Repositories;
 using stTrackerMVC.Services;
 using stTrackerMVC.ViewModelBuilders;
@@ -6,16 +9,26 @@ namespace stTrackerMVC
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddSingleton<CourseService>();
-            builder.Services.AddSingleton<CourseRepository>();
-            builder.Services.AddSingleton<CoursesVmBuilder>();
+            //builder.Services.AddSingleton<CourseService>();
+            //builder.Services.AddSingleton<CourseRepository>();
+            //builder.Services.AddSingleton<CoursesVmBuilder>();
+
+            // Добавляем контекст БД
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Регистрируем сервисы
+            builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+            builder.Services.AddScoped<ICourseService, CourseService>();
+            builder.Services.AddScoped<CoursesVmBuilder>();
 
             var app = builder.Build();
 
@@ -37,6 +50,27 @@ namespace stTrackerMVC
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            // Инициализация базы данных (заполнение начальными данными)
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<AppDbContext>();
+                    context.Database.Migrate();
+
+                    // Инициализация начальных данных
+                    var repository = services.GetRequiredService<ICourseRepository>();
+                    await repository.InitializeDataAsync();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Произошла ошибка при инициализации базы данных");
+                }
+            }
+
 
             app.Run();
         }
