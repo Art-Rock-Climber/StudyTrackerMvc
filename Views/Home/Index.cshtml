@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@using stTrackerMVC.ViewModels
+@model CoursesVm
+
+<div class="text-center">
+    <h1 class="display-4">Cources</h1>
+</div>
+<table border="1">
+    <tr>
+        <th>Course</th>
+        <th>Description</th>
+        <th>Professor</th>
+    </tr>
+    @foreach (var course in Model.Courses)
+    {
+        <tr>
+            <td>@course.Name</td>
+            <td>@course.Description</td>
+            <td>@course.ProfessorName</td>
+        </tr>
+    }
+</table>
