@@ -49,7 +49,7 @@ namespace stTrackerMVC
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Course}/{action=Index}/{id?}");
 
             // Инициализация базы данных (заполнение начальными данными)
             using (var scope = app.Services.CreateScope())
