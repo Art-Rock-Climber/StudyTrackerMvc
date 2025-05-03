@@ -19,7 +19,7 @@ namespace stTrackerMVC.ViewModelBuilders
         //    return new CoursesVm(courses.ToList());
         //}
 
-        public async Task<CoursesVm> Build(string searchTerm = null)
+        public async Task<CoursesVm> Build(string? searchTerm = null)
         {
             var courses = await _courseService.GetCoursesWithTaskCountAsync(searchTerm);
 

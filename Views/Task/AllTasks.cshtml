@@ -1,0 +1,49 @@
+﻿@model IEnumerable<stTrackerMVC.Models.CourseTask>
+
+@{
+    ViewData["Title"] = "AllTasks";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Все задания</h1>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Deadline)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Course)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                <td>@task.Title</td>
+                <td>@task.Course?.Name</td>
+                <td>@task.Deadline.ToString("dd.MM.yyyy")</td>
+                <td>@task.Status</td>
+                <td>@task.Course.Name</td>
+                <td>
+                    <a asp-action="Edit" asp-controller="Task" asp-route-id="@task.Id" class="btn btn-sm btn-warning">Изменить</a>
+                    <a asp-action="Delete" asp-controller="Task" asp-route-id="@task.Id" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

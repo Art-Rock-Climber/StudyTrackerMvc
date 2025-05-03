@@ -1,11 +1,14 @@
 ﻿@model IEnumerable<Course>
 
-<h2>Список курсов</h2>
+
+<div class="text-center">
+    <h1 class="display-4">Список курсов</h1>
+</div>
 <p>
     <a asp-action="Create" class="btn btn-primary">Добавить курс</a>
 </p>
 
-<table class="table">
+<table class="table" border="1">
     <thead>
         <tr>
             <th>Название</th>
@@ -25,7 +28,7 @@
                     <a asp-controller="Task" asp-action="ForCourse" asp-route-courseId="@item.Id"
                        class="btn btn-sm btn-info">Задания</a>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Изменить</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Удалить</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Удалить</a>
                 </td>
             </tr>
         }

@@ -6,7 +6,7 @@ namespace stTrackerMVC.ViewModels
     {
         public List<CourseItemVm> Courses { get; set; } = new();
         public int TotalCount => Courses.Count;
-        public string SearchTerm { get; set; } // Для фильтрации
+        public string? SearchTerm { get; set; } // Для фильтрации
 
         //public CoursesVm(List<CourseItemVm> courses, string searchTerm)
         //{

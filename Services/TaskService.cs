@@ -1,4 +1,5 @@
-﻿using stTrackerMVC.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using stTrackerMVC.Models;
 using stTrackerMVC.Repositories;
 
 namespace stTrackerMVC.Services
@@ -47,6 +48,11 @@ namespace stTrackerMVC.Services
                             t.Status != CourseTaskStatus.Completed)
                 .OrderBy(t => t.Deadline)
                 .ToList();
+        }
+
+        public async Task<IEnumerable<CourseTask>> GetAllTasksAsync()
+        {
+            return await _repository.GetAllAsync();
         }
     }
 }

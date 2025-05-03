@@ -154,5 +154,12 @@ namespace stTrackerMVC.Controllers
                 return RedirectToAction("Delete", new { id });
             }
         }
+
+        [HttpGet("AllTasks")]
+        public async Task<IActionResult> AllTasks()
+        {
+            var tasks = await _taskService.GetAllTasksAsync();
+            return View(tasks);
+        }
     }
 }
