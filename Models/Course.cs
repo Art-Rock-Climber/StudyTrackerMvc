@@ -1,9 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace stTrackerMVC.Models
 {
     public class Course
     {
+        //[Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Название обязательно")]
@@ -14,8 +17,11 @@ namespace stTrackerMVC.Models
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Укажите преподавателя")]
+        [StringLength(100)]
         public string ProfessorName { get; set; } = string.Empty;
 
-        public Course() { }
+        public ICollection<CourseTask> Tasks { get; set; } = new List<CourseTask>();
+
+        //public Course() { }
     }
 }

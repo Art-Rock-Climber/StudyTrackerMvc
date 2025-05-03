@@ -1,0 +1,84 @@
+﻿@model IEnumerable<CourseTask>
+@{
+    ViewData["Title"] = "Задания курса";
+    var course = ViewBag.Course as Course;
+
+    // Метод для преобразования статуса
+    string GetStatusName(CourseTaskStatus status)
+    {
+        return status switch
+        {
+            CourseTaskStatus.NotStarted => "Не начато",
+            CourseTaskStatus.InProgress => "В процессе",
+            CourseTaskStatus.Completed => "Завершено",
+            _ => status.ToString()
+        };
+    }
+}
+
+<h2>Задания курса "@course.Name"</h2>
+
+<p>
+    <a asp-controller="Task" asp-action="Create" asp-route-courseId="@course.Id" class="btn btn-primary">
+        Добавить задание
+    </a>
+    <a asp-controller="Course" asp-action="Index" class="btn btn-secondary">
+        Назад к курсам
+    </a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Дедлайн</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                <td>@task.Title</td>
+                <td>@task.Deadline.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <select class="form-control status-select" data-task-id="@task.Id">
+                        @foreach (var status in Enum.GetValues(typeof(CourseTaskStatus)))
+                        {
+                            <option value="@status" selected="@(task.Status == (CourseTaskStatus)status)">
+                                @GetStatusName((CourseTaskStatus)status)
+                            </option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i> Изменить
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('.status-select').change(function() {
+                const taskId = $(this).data('task-id');
+                const newStatus = $(this).val();
+
+                $.post('@Url.Action("UpdateStatus", "CourseTask")', {
+                    taskId: taskId,
+                    status: newStatus
+                }).fail(function() {
+                    alert('Ошибка при обновлении статуса');
+                });
+            });
+        });
+    </script>
+}

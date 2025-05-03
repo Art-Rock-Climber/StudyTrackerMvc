@@ -1,0 +1,25 @@
+﻿@model stTrackerMVC.Models.CourseTask
+
+@{
+    ViewData["Title"] = "Удаление задания";
+    var course = ViewBag.Course as Course;
+}
+
+<h3>Вы уверены, что хотите удалить это задание?</h3>
+<div>
+    <h4>@Model.Title</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Курс:</dt>
+        <dd class="col-sm-10">@course?.Name</dd>
+
+        <dt class="col-sm-2">Дедлайн:</dt>
+        <dd class="col-sm-10">@Model.Deadline.ToString("dd.MM.yyyy")</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Удалить" class="btn btn-danger" />
+        <a asp-action="ForCourse" asp-route-courseId="@Model.CourseId" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>

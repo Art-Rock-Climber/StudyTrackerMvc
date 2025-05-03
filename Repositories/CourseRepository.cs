@@ -48,9 +48,17 @@ namespace stTrackerMVC.Repositories
             }
         }
 
-        public async Task<IEnumerable<Course>> GetCoursesAsync()
+        public async Task<IEnumerable<Course>> GetCoursesAsync(string? searchTerm = null)
         {
-            return await _context.Courses.ToListAsync();
+            var query = _context.Courses.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Name.Contains(searchTerm) ||
+                                       c.ProfessorName.Contains(searchTerm));
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task AddCourseAsync(Course course)
@@ -59,9 +67,14 @@ namespace stTrackerMVC.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Course?> GetCourseByIdAsync(int id)
+        public async Task<Course?> GetCourseByIdAsync(int id, bool includeTasks = false)
         {
-            return await _context.Courses.FindAsync(id);
+            var query = _context.Courses.AsQueryable();
+
+            if (includeTasks)
+                query = query.Include(c => c.Tasks);
+
+            return await query.FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task UpdateCourseAsync(Course course)

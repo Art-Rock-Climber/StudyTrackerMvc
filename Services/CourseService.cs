@@ -36,5 +36,15 @@ namespace stTrackerMVC.Services
         {
             await _repository.DeleteCourseAsync(id);
         }
+
+        public async Task<IEnumerable<Course>> GetCoursesWithTaskCountAsync(string? searchTerm = null)
+        {
+            return await _repository.GetCoursesAsync(searchTerm);
+        }
+
+        public async Task<Course> GetCourseWithTasksAsync(int id)
+        {
+            return await _repository.GetCourseByIdAsync(id, includeTasks: true);
+        }
     }
 }

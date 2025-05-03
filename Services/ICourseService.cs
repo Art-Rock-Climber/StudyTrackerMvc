@@ -9,5 +9,8 @@ namespace stTrackerMVC.Services
         Task<Course?> GetCourseByIdAsync(int id);
         Task UpdateCourseAsync(Course course);
         Task DeleteCourseAsync(int id);
+
+        Task<IEnumerable<Course>> GetCoursesWithTaskCountAsync(string? searchTerm = null);
+        Task<Course> GetCourseWithTasksAsync(int id);
     }
 }

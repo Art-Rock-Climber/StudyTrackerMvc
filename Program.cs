@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Cors.Infrastructure;
+п»їusing Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using stTrackerMVC.Data;
 using stTrackerMVC.Repositories;
@@ -21,14 +21,22 @@ namespace stTrackerMVC
             //builder.Services.AddSingleton<CourseRepository>();
             //builder.Services.AddSingleton<CoursesVmBuilder>();
 
-            // Добавляем контекст БД
+            // Р”РѕР±Р°РІР»СЏРµРј РєРѕРЅС‚РµРєСЃС‚ Р‘Р”
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Регистрируем сервисы
+            // Р РµРіРёСЃС‚СЂРёСЂСѓРµРј РЅРѕРІС‹Рµ СЃРµСЂРІРёСЃС‹
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<ICourseService, CourseService>();
             builder.Services.AddScoped<CoursesVmBuilder>();
+
+            builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+            builder.Services.AddScoped<ITaskService, TaskService>();
+            builder.Services.AddScoped<CourseTaskVmBuilder>();
+
+            builder.Services.AddHttpsRedirection(options => {
+                options.HttpsPort = 7020;
+            });
 
             var app = builder.Build();
 
@@ -51,7 +59,8 @@ namespace stTrackerMVC
                 name: "default",
                 pattern: "{controller=Course}/{action=Index}/{id?}");
 
-            // Инициализация базы данных (заполнение начальными данными)
+
+            // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±Р°Р·С‹ РґР°РЅРЅС‹С…
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -60,17 +69,15 @@ namespace stTrackerMVC
                     var context = services.GetRequiredService<AppDbContext>();
                     context.Database.Migrate();
 
-                    // Инициализация начальных данных
                     var repository = services.GetRequiredService<ICourseRepository>();
                     await repository.InitializeDataAsync();
                 }
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Произошла ошибка при инициализации базы данных");
+                    logger.LogError(ex, "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Р±Р°Р·С‹ РґР°РЅРЅС‹С…");
                 }
             }
-
 
             app.Run();
         }

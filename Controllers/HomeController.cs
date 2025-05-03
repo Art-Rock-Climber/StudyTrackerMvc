@@ -18,7 +18,7 @@ namespace stTrackerMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var coursesVm = await _coursesVmBuilder.GetCoursesVmAsync();
+            var coursesVm = await _coursesVmBuilder.Build();
             return View(coursesVm);
         }
 

@@ -1,0 +1,69 @@
+﻿@model CourseTask
+
+@{
+    ViewData["Title"] = "Добавление нового задания";
+    var course = ViewBag.Course as Course;
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="Task" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="CourseId" value="@course.Id" />
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Курс: @course.Name</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Deadline" class="form-label"></label>
+                        <input asp-for="Deadline" type="datetime-local"
+                               class="form-control"
+                               value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-ddTHH:mm")" />
+                        <span asp-validation-for="Deadline" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" asp-items="Html.GetEnumSelectList<CourseTaskStatus>()" class="form-select">
+                            <option value="">-- Выберите статус --</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Добавить задание</button>
+                    <a asp-action="ForCourse" asp-controller="Task" asp-route-courseId="@course.Id"
+                       class="btn btn-secondary">Отмена</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Установка минимальной даты (сегодня)
+        document.addEventListener('DOMContentLoaded', function() {
+            const deadlineField = document.querySelector('#Deadline');
+            const today = new Date().toISOString().slice(0, 16);
+            deadlineField.min = today;
+        });
+    </script>
+}

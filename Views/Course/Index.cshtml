@@ -22,8 +22,10 @@
                 <td>@item.Description</td>
                 <td>@item.ProfessorName</td>
                 <td>
+                    <a asp-controller="Task" asp-action="ForCourse" asp-route-courseId="@item.Id"
+                       class="btn btn-sm btn-info">Задания</a>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Изменить</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Удалить</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Удалить</a>
                 </td>
             </tr>
         }

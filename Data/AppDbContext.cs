@@ -10,18 +10,38 @@ namespace stTrackerMVC.Data
         }
 
         public DbSet<Course> Courses { get; set; }
+        public DbSet<CourseTask> Tasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Конфигурация модели
-            modelBuilder.Entity<Course>().ToTable("Courses");
+            // Конфигурация для Course
+            modelBuilder.Entity<Course>(entity =>
+            {
+                entity.ToTable("Courses");
 
-            // Пример начальных данных
-            modelBuilder.Entity<Course>().HasData(
-                new Course { Id = 1, Name = "Math", Description = "some description", ProfessorName = "Ivanov" },
-                new Course { Id = 2, Name = "History", Description = "world history", ProfessorName = "Petrov" },
-                new Course { Id = 3, Name = "Computer Science", Description = null, ProfessorName = "Sidorov" }
-            );
+                // Настройка автоинкремента
+                entity.Property(c => c.Id)
+                      .ValueGeneratedOnAdd();
+
+                // Начальные данные
+                entity.HasData(
+                    new Course { Id = 1, Name = "Math", Description = "some description", ProfessorName = "Ivanov" },
+                    new Course { Id = 2, Name = "History", Description = "world history", ProfessorName = "Petrov" },
+                    new Course { Id = 3, Name = "Computer Science", Description = null, ProfessorName = "Sidorov" }
+                );
+            });
+
+            // Конфигурация для CourseTask
+            modelBuilder.Entity<CourseTask>(entity =>
+            {
+                // Настройка автоинкремента
+                entity.Property(t => t.Id)
+                      .ValueGeneratedOnAdd();
+
+                // Конвертация enum в строку
+                entity.Property(t => t.Status)
+                      .HasConversion<string>();
+            });
         }
     }
 }
