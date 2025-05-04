@@ -1,4 +1,5 @@
-﻿@model CourseTask
+﻿@using stTrackerMVC.ViewModels
+@model CourseTaskVm
 
 @{
     ViewData["Title"] = "Добавление нового задания";
@@ -32,7 +33,7 @@
                         <label asp-for="Deadline" class="form-label"></label>
                         <input asp-for="Deadline" type="datetime-local"
                                class="form-control"
-                               value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-ddTHH:mm")" />
+                               value="@Model.Deadline.ToString("yyyy-MM-ddTHH:mm")"/>
                         <span asp-validation-for="Deadline" class="text-danger"></span>
                     </div>
 
@@ -46,7 +47,7 @@
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Добавить задание</button>
-                    <a asp-action="ForCourse" asp-controller="Task" asp-route-courseId="@course.Id"
+                    <a asp-action="ForCourse" asp-route-courseId="@course.Id"
                        class="btn btn-secondary">Отмена</a>
                 </div>
             </div>

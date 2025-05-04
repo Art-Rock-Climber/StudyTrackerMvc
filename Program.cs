@@ -14,12 +14,7 @@ namespace stTrackerMVC
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllersWithViews();
-
-            //builder.Services.AddSingleton<CourseService>();
-            //builder.Services.AddSingleton<CourseRepository>();
-            //builder.Services.AddSingleton<CoursesVmBuilder>();
 
             // Добавляем контекст БД
             builder.Services.AddDbContext<AppDbContext>(options =>

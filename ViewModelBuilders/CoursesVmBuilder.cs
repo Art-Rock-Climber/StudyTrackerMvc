@@ -25,15 +25,33 @@ namespace stTrackerMVC.ViewModelBuilders
 
             return new CoursesVm
             {
-                Courses = courses.Select(c => new CourseItemVm
+                Courses = courses.Select(c => new CourseVm
                 {
                     Id = c.Id,
                     Name = c.Name,
                     Description = c.Description,
                     ProfessorName = c.ProfessorName,
-                    TaskCount = c.Tasks.Count
                 }).ToList(),
                 SearchTerm = searchTerm
+            };
+        }
+
+        public async Task<CourseVm> BuildOne(int id)
+        {
+            var course = await _courseService.GetCourseWithTasksAsync(id);
+
+            return new CourseVm
+            {
+                Id = course.Id,
+                Name = course.Name,
+                Description = course.Description,
+                ProfessorName = course.ProfessorName,
+                Tasks = course.Tasks.Select(t => new CourseTaskVm
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Deadline = t.Deadline
+                }).ToList()
             };
         }
     }

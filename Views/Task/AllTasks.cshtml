@@ -1,8 +1,9 @@
-﻿@model IEnumerable<stTrackerMVC.Models.CourseTask>
+﻿@using stTrackerMVC.ViewModels
+@model CourseTasksVm
 
 @{
     ViewData["Title"] = "AllTasks";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="text-center">
@@ -13,32 +14,28 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                Название
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                Дедлайн
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Deadline)
+                Статус
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Course)
+                Курс
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var task in Model)
+        @foreach (var task in Model.Tasks)
         {
             <tr>
                 <td>@task.Title</td>
-                <td>@task.Course?.Name</td>
-                <td>@task.Deadline.ToString("dd.MM.yyyy")</td>
+                <td>@task.Deadline.ToString("dd.MM.yyyyTHH:mm")</td>
                 <td>@task.Status</td>
-                <td>@task.Course.Name</td>
+                <td>@task.CourseName</td>
                 <td>
                     <a asp-action="Edit" asp-controller="Task" asp-route-id="@task.Id" class="btn btn-sm btn-warning">Изменить</a>
                     <a asp-action="Delete" asp-controller="Task" asp-route-id="@task.Id" class="btn btn-sm btn-danger">Удалить</a>

@@ -21,7 +21,5 @@ namespace stTrackerMVC.Models
         public string ProfessorName { get; set; } = string.Empty;
 
         public ICollection<CourseTask> Tasks { get; set; } = new List<CourseTask>();
-
-        //public Course() { }
     }
 }

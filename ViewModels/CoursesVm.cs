@@ -1,27 +1,30 @@
-﻿using stTrackerMVC.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace stTrackerMVC.ViewModels
 {
     public class CoursesVm
     {
-        public List<CourseItemVm> Courses { get; set; } = new();
+        public List<CourseVm> Courses { get; set; } = new();
         public int TotalCount => Courses.Count;
         public string? SearchTerm { get; set; } // Для фильтрации
-
-        //public CoursesVm(List<CourseItemVm> courses, string searchTerm)
-        //{
-        //    Courses = courses;
-        //    SearchTerm = searchTerm;
-        //}
     }
 
-    public class CourseItemVm
+    public class CourseVm
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string ProfessorName { get; set; }
-        public int TaskCount { get; set; }
+
+        [Required(ErrorMessage = "Название обязательно")]
+        [StringLength(100, MinimumLength = 3)]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Укажите преподавателя")]
+        [StringLength(100)]
+        public string ProfessorName { get; set; } = string.Empty;
+
+        public List<CourseTaskVm> Tasks { get; set; } = new();
     }
 }
 

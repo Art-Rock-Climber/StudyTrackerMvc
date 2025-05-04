@@ -1,13 +1,22 @@
-﻿@model CourseTask
+﻿@using stTrackerMVC.ViewModels
+@model CourseTaskVm
 
 @{
-    ViewData["Title"] = ViewContext.RouteData.Values["action"].ToString() == "Edit" ?
-        "Редактирование задания" : "Создание задания";
+    ViewData["Title"] = "Редактирование задания";
+    var course = ViewBag.Course as Course;
 }
-
+@if (ViewBag.Course == null)
+{
+    <div class="alert alert-danger">
+        Ошибка: не удалось загрузить данные курса
+    </div>
+    return;
+}
 <h2>@ViewData["Title"]</h2>
 
-<form asp-action="@ViewContext.RouteData.Values["action"]">
+<form asp-controller="Task" asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="CourseId" />
 
     <div class="form-group">

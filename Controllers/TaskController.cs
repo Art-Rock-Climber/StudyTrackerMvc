@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using stTrackerMVC.Data;
 using stTrackerMVC.Models;
 using stTrackerMVC.Services;
+using stTrackerMVC.ViewModelBuilders;
+using stTrackerMVC.ViewModels;
 
 namespace stTrackerMVC.Controllers
 {
@@ -15,28 +17,31 @@ namespace stTrackerMVC.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly ICourseService _courseService;
+        private readonly CourseTaskVmBuilder _courseTaskVmBuilder;
         private readonly ILogger<TaskController> _logger;
 
         public TaskController(
             ITaskService taskService,
             ICourseService courseService,
+            CourseTaskVmBuilder courseTaskVmBuilder,
             ILogger<TaskController> logger)
         {
             _taskService = taskService;
             _courseService = courseService;
+            _courseTaskVmBuilder = courseTaskVmBuilder;
             _logger = logger;
         }
 
         // GET: Task/ForCourse/5
         [HttpGet("ForCourse/{courseId:int}")]
-        public async Task<IActionResult> ForCourse(int courseId)
+        public async Task<IActionResult> ForCourse(int courseId, string? statusFilter)
         {
+            var courseTasksVm = await _courseTaskVmBuilder.Build(courseId, statusFilter);
             var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null) return NotFound();
 
             ViewBag.Course = course;
-            var tasks = await _taskService.GetTasksByCourseAsync(courseId);
-            return View(tasks);
+            return View(courseTasksVm);
         }
 
         // GET: Task/Create?courseId=5
@@ -47,7 +52,7 @@ namespace stTrackerMVC.Controllers
             if (course == null) return NotFound();
 
             ViewBag.Course = course;
-            return View(new CourseTask
+            return View(new CourseTaskVm
             {
                 CourseId = courseId,
                 Deadline = DateTime.Now.AddDays(7)
@@ -56,12 +61,21 @@ namespace stTrackerMVC.Controllers
 
         [HttpPost("Create/{courseId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Deadline,Status,CourseId")] CourseTask task)
+        public async Task<IActionResult> Create(int courseId, [FromForm] CourseTaskVm taskVm)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var task = new CourseTask
+                    {
+                        Title = taskVm.Title,
+                        Description = taskVm.Description,
+                        Deadline = taskVm.Deadline,
+                        Status = taskVm.Status,
+                        CourseId = courseId
+                    };
+
                     await _taskService.CreateTaskAsync(task);
                     return RedirectToAction(nameof(ForCourse), new { courseId = task.CourseId });
                 }
@@ -73,30 +87,44 @@ namespace stTrackerMVC.Controllers
             }
 
             // Если ошибка, возвращаем на форму с введёнными данными
-            ViewBag.Course = await _courseService.GetCourseByIdAsync(task.CourseId);
-            return View(task);
+            ViewBag.Course = await _courseService.GetCourseByIdAsync(courseId);
+            return View(taskVm);
         }
 
         // GET: Task/Edit/5
         [HttpGet("Edit/{id:int}")]
         public async Task<IActionResult> Edit(int id)
         {
-            var task = await _taskService.GetTaskAsync(id);
-            if (task == null) return NotFound();
+            var taskVm = await _courseTaskVmBuilder.BuildOne(id);
+            if (taskVm == null) return NotFound();
 
-            return View(task);
+            var course = await _courseService.GetCourseByIdAsync(taskVm.CourseId);
+            if (course == null) return NotFound();
+
+            ViewBag.Course = course;
+            return View(taskVm);
         }
 
         [HttpPost("Edit/{id:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CourseTask task)
+        public async Task<IActionResult> Edit(int id, [FromForm] CourseTaskVm taskVm)
         {
-            if (id != task.Id) return NotFound();
+            if (id != taskVm.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var task = new CourseTask
+                    {
+                        Id = taskVm.Id,
+                        Title = taskVm.Title,
+                        Description = taskVm.Description,
+                        Deadline = taskVm.Deadline,
+                        Status = taskVm.Status,
+                        CourseId = taskVm.CourseId
+                    };
+
                     await _taskService.UpdateTaskAsync(task);
                     return RedirectToAction(nameof(ForCourse), new { courseId = task.CourseId });
                 }
@@ -105,7 +133,9 @@ namespace stTrackerMVC.Controllers
                     ModelState.AddModelError("", ex.Message);
                 }
             }
-            return View(task);
+            var course = await _courseService.GetCourseByIdAsync(taskVm.CourseId);
+            ViewBag.Course = course;
+            return View(taskVm);
         }
 
         // POST: Task/UpdateStatus/5?status=InProgress
@@ -127,11 +157,14 @@ namespace stTrackerMVC.Controllers
         [HttpGet("Delete/{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var task = await _taskService.GetTaskAsync(id);
-            if (task == null) return NotFound();
-            
-            ViewBag.Course = await _courseService.GetCourseByIdAsync(task.CourseId);
-            return View(task);
+            var taskVm = await _courseTaskVmBuilder.BuildOne(id);
+            if (taskVm == null) return NotFound();
+
+            var course = await _courseService.GetCourseByIdAsync(taskVm.CourseId);
+            if (course == null) return NotFound();
+
+            ViewBag.Course = course;
+            return View(taskVm);
         }
 
         [HttpPost("Delete/{id:int}"), ActionName("Delete")]
@@ -146,20 +179,20 @@ namespace stTrackerMVC.Controllers
                 var courseId = task.CourseId;
                 await _taskService.DeleteTaskAsync(id);
 
-                return RedirectToAction("ForCourse", new { courseId });
+                return RedirectToAction(nameof(ForCourse), new { courseId });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting task");
-                return RedirectToAction("Delete", new { id });
+                return RedirectToAction(nameof(Delete), new { id });
             }
         }
 
         [HttpGet("AllTasks")]
         public async Task<IActionResult> AllTasks()
         {
-            var tasks = await _taskService.GetAllTasksAsync();
-            return View(tasks);
+            var tasksVm = await _courseTaskVmBuilder.Build(null, null);
+            return View(tasksVm);
         }
     }
 }

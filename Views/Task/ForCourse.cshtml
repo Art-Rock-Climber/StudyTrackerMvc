@@ -1,4 +1,5 @@
-﻿@model IEnumerable<CourseTask>
+﻿@using stTrackerMVC.ViewModels
+@model CourseTasksVm
 @{
     ViewData["Title"] = "Задания курса";
     var course = ViewBag.Course as Course;
@@ -37,7 +38,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var task in Model)
+        @foreach (var task in Model.Tasks)
         {
             <tr>
                 <td>@task.Title</td>
@@ -53,10 +54,10 @@
                     </select>
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
+                    <a asp-controller="Task" a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
                         <i class="bi bi-pencil"></i> Изменить
                     </a>
-                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
+                    <a asp-controller="Task" a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
                         <i class="bi bi-trash"></i> Удалить
                     </a>
                 </td>

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<stTrackerMVC.Models.CourseTask>
+﻿@using stTrackerMVC.ViewModels
+@model CourseTasksVm
 
 @{
     ViewData["Title"] = "Index";
@@ -14,25 +15,25 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                Title
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                Description
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Deadline)
+                Deadline
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+                Status
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Course)
+                Course
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model) 
+        @foreach (var item in Model.Tasks) 
         {
             <tr>
                 <td>
@@ -48,7 +49,7 @@
                     @Html.DisplayFor(modelItem => item.Status)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Course.Name)
+                    @Html.DisplayFor(modelItem => item.CourseName)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

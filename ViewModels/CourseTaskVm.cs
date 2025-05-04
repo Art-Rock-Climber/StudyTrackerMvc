@@ -1,17 +1,23 @@
-﻿namespace stTrackerMVC.ViewModels
+﻿using stTrackerMVC.Models;
+
+namespace stTrackerMVC.ViewModels
 {
-    public class TasksVm
+    public class CourseTasksVm
     {
-        public List<TaskItemVm> Tasks { get; set; } = new();
-        public int CourseId { get; set; }
+        public List<CourseTaskVm> Tasks { get; set; } = new();
+        public int? CourseId { get; set; }
         public string CourseName { get; set; }
+        public string[] AvailableStatuses { get; set; }
     }
 
-    public class TaskItemVm
+    public class CourseTaskVm
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Deadline { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime Deadline { get; set; }
+        public CourseTaskStatus Status { get; set; }
+        public string CourseName { get; set; } = string.Empty;
+        public int CourseId { get; set; }
     }
 }
