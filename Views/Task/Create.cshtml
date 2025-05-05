@@ -33,7 +33,7 @@
                         <label asp-for="Deadline" class="form-label"></label>
                         <input asp-for="Deadline" type="datetime-local"
                                class="form-control"
-                               value="@Model.Deadline.ToString("yyyy-MM-ddTHH:mm")"/>
+                               value="@Model.Deadline.ToString("yyyy-MM-dd HH:mm")"/>
                         <span asp-validation-for="Deadline" class="text-danger"></span>
                     </div>
 

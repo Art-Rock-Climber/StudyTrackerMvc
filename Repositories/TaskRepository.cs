@@ -18,10 +18,18 @@ namespace stTrackerMVC.Repositories
             return await _context.Tasks.FindAsync(id);
         }
 
-        public async Task<List<CourseTask>> GetByCourseIdAsync(int courseId)
+        public async Task<List<CourseTask>> GetByCourseIdAsync(int courseId, CourseTaskStatus? status = null)
         {
-            return await _context.Tasks
-                .Where(t => t.CourseId == courseId)
+            var query = _context.Tasks
+            .Include(t => t.Course)
+            .Where(t => t.CourseId == courseId);
+
+            if (status.HasValue)
+            {
+                query = query.Where(t => t.Status == status.Value);
+            }
+
+            return await query
                 .OrderBy(t => t.Deadline)
                 .ToListAsync();
         }

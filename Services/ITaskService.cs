@@ -5,7 +5,7 @@ namespace stTrackerMVC.Services
     public interface ITaskService
     {
         Task<CourseTask> GetTaskAsync(int id);
-        Task<List<CourseTask>> GetTasksByCourseAsync(int courseId);
+        Task<List<CourseTask>> GetTasksByCourseAsync(int courseId, string? statusFilter = null);
         Task<IEnumerable<CourseTask>> GetAllTasksAsync();
         Task CreateTaskAsync(CourseTask task);
         Task UpdateTaskAsync(CourseTask task);

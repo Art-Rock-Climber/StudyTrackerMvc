@@ -1,4 +1,5 @@
-﻿using stTrackerMVC.Models;
+﻿using Microsoft.Data.SqlClient;
+using stTrackerMVC.Models;
 using stTrackerMVC.Services;
 using stTrackerMVC.ViewModels;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace stTrackerMVC.ViewModelBuilders
             _taskService = taskService;
         }
 
-        public async Task<CourseTasksVm?> Build(int? courseId, string? statusFilter)
+        public async Task<CourseTasksVm?> Build(int? courseId, string? statusFilter, string? sortOrder = null)
         {
             IEnumerable<CourseTask> tasks;
 
@@ -32,10 +33,14 @@ namespace stTrackerMVC.ViewModelBuilders
                 tasks = await _taskService.GetAllTasksAsync();
             }
 
+            // Фильтрация
             if (!string.IsNullOrEmpty(statusFilter))
             {
                 tasks = tasks.Where(t => t.Status.ToString() == statusFilter);
             }
+
+            // Сортировка
+            tasks = ApplySorting(tasks, sortOrder);
 
             return new CourseTasksVm
             {
@@ -68,6 +73,16 @@ namespace stTrackerMVC.ViewModelBuilders
                 Status = task.Status,
                 CourseName = task.Course?.Name,
                 CourseId = task.CourseId
+            };
+        }
+
+        private static IEnumerable<CourseTask> ApplySorting(IEnumerable<CourseTask> tasks, string? sortOrder)
+        {
+            return sortOrder switch
+            {
+                "deadline_asc" => tasks.OrderBy(t => t.Deadline),
+                "deadline_desc" => tasks.OrderByDescending(t => t.Deadline),
+                _ => tasks
             };
         }
     }

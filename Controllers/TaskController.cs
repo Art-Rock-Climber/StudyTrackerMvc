@@ -34,12 +34,16 @@ namespace stTrackerMVC.Controllers
 
         // GET: Task/ForCourse/5
         [HttpGet("ForCourse/{courseId:int}")]
-        public async Task<IActionResult> ForCourse(int courseId, string? statusFilter)
+        public async Task<IActionResult> ForCourse(
+            int courseId, 
+            string? statusFilter,
+            string? sortOrder)
         {
-            var courseTasksVm = await _courseTaskVmBuilder.Build(courseId, statusFilter);
             var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null) return NotFound();
 
+            var courseTasksVm = await _courseTaskVmBuilder.Build(courseId, statusFilter, sortOrder);
+            
             ViewBag.Course = course;
             return View(courseTasksVm);
         }

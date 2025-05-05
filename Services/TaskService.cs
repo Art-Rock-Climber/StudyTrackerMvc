@@ -15,8 +15,16 @@ namespace stTrackerMVC.Services
 
         public Task<CourseTask> GetTaskAsync(int id) => _repository.GetByIdAsync(id);
 
-        public Task<List<CourseTask>> GetTasksByCourseAsync(int courseId) =>
-            _repository.GetByCourseIdAsync(courseId);
+        public async Task<List<CourseTask>> GetTasksByCourseAsync(int courseId, string? statusFilter = null)
+        {
+            CourseTaskStatus? status = null;
+            if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<CourseTaskStatus>(statusFilter, out var parsedStatus))
+            {
+                status = parsedStatus;
+            }
+
+            return await _repository.GetByCourseIdAsync(courseId, status);
+        }
 
         public async Task CreateTaskAsync(CourseTask task)
         {

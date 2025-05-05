@@ -6,8 +6,10 @@ namespace stTrackerMVC.ViewModels
     {
         public List<CourseTaskVm> Tasks { get; set; } = new();
         public int? CourseId { get; set; }
-        public string CourseName { get; set; }
-        public string[] AvailableStatuses { get; set; }
+        public string CourseName { get; set; } = string.Empty;
+        public string[] AvailableStatuses { get; set; } = Array.Empty<string>();
+        public string? CurrentStatusFilter { get; set; }
+        public string? CurrentSortOrder { get; set; }
     }
 
     public class CourseTaskVm

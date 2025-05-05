@@ -15,9 +15,60 @@
             _ => status.ToString()
         };
     }
+
+    var allStatuses = ViewBag.AllStatuses as string[] ?? Enum.GetNames(typeof(CourseTaskStatus));
+    var currentStatusFilter = ViewBag.StatusFilter as string;
+    var currentSortOrder = ViewBag.SortOrder as string;
+}
+@section Styles {
+    <style>
+        .sort-arrow {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+
+        .active-sort {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+    </style>
 }
 
 <h2>Задания курса "@course.Name"</h2>
+
+<!-- Фильтр и сортировка -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form asp-action="ForCourse" asp-route-courseId="@course.Id" method="get" class="form-inline">
+            <div class="input-group">
+                <select name="statusFilter" class="form-select">
+                    <option value="">Все статусы</option>
+                    @foreach (var status in allStatuses)
+                    {
+                        <option value="@status" selected="@(status == currentStatusFilter)">
+                            @status
+                        </option>
+                    }
+                </select>
+
+                <select name="sortOrder" class="form-select">
+                    <option value="">Без сортировки</option>
+                    <option value="deadline_asc" selected="@(currentSortOrder == "deadline_asc")">
+                        Дедлайн (по возрастанию)
+                    </option>
+                    <option value="deadline_desc" selected="@(currentSortOrder == "deadline_desc")">
+                        Дедлайн (по убыванию)
+                    </option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">Применить</button>
+                <a asp-action="ForCourse" asp-route-courseId="@course.Id" class="btn btn-secondary">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 
 <p>
     <a asp-controller="Task" asp-action="Create" asp-route-courseId="@course.Id" class="btn btn-primary">
@@ -42,7 +93,7 @@
         {
             <tr>
                 <td>@task.Title</td>
-                <td>@task.Deadline.ToString("dd.MM.yyyy")</td>
+                <td>@task.Deadline.ToString("dd.MM.yyyy HH:mm")</td>
                 <td>
                     <select class="form-control status-select" data-task-id="@task.Id">
                         @foreach (var status in Enum.GetValues(typeof(CourseTaskStatus)))
@@ -54,10 +105,10 @@
                     </select>
                 </td>
                 <td>
-                    <a asp-controller="Task" a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
                         <i class="bi bi-pencil"></i> Изменить
                     </a>
-                    <a asp-controller="Task" a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
+                    <a asp-controller="Task" asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
                         <i class="bi bi-trash"></i> Удалить
                     </a>
                 </td>
@@ -73,7 +124,7 @@
                 const taskId = $(this).data('task-id');
                 const newStatus = $(this).val();
 
-                $.post('@Url.Action("UpdateStatus", "CourseTask")', {
+                $.post('@Url.Action("UpdateStatus", "Task")', {
                     taskId: taskId,
                     status: newStatus
                 }).fail(function() {
