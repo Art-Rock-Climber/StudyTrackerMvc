@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using stTrackerMVC.Data;
 using stTrackerMVC.Models;
 
@@ -7,10 +8,12 @@ namespace stTrackerMVC.Repositories
     public class CourseRepository : ICourseRepository
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public CourseRepository(AppDbContext context)
+        public CourseRepository(AppDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task InitializeDataAsync()
@@ -91,6 +94,67 @@ namespace stTrackerMVC.Repositories
                 _context.Courses.Remove(course);
                 await _context.SaveChangesAsync();
             }
+        }
+
+
+        public async Task<bool> IsStudentAssignedAsync(string studentId, int courseId)
+        {
+            return await _context.CourseStudents
+                .AnyAsync(cs => cs.StudentId == studentId && cs.CourseId == courseId);
+        }
+
+        public async Task RemoveAllStudentsFromCourseAsync(int courseId)
+        {
+            var assignments = await _context.CourseStudents
+                .Where(cs => cs.CourseId == courseId)
+                .ToListAsync();
+
+            _context.CourseStudents.RemoveRange(assignments);
+        }
+
+        public async Task AddStudentToCourseAsync(int courseId, string studentId)
+        {
+            var assignment = new CourseStudent
+            {
+                CourseId = courseId,
+                StudentId = studentId
+            };
+
+            await _context.CourseStudents.AddAsync(assignment);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<string>> GetCourseStudentIdsAsync(int courseId)
+        {
+            return await _context.CourseStudents
+                .Where(cs => cs.CourseId == courseId)
+                .Select(cs => cs.StudentId)
+                .ToListAsync();
+        }
+
+        public IQueryable<Course> GetCoursesForStudentQueryable(string studentId)
+        {
+            return _context.CourseStudents
+                .Where(cs => cs.StudentId == studentId)
+                .Include(cs => cs.Course)
+                .ThenInclude(c => c.Tasks) // Если нужно включать задачи
+                .Select(cs => cs.Course);
+        }
+
+
+        public async Task<IEnumerable<AppUser>> GetStudentsNotInListAsync(IEnumerable<string> excludedIds)
+        {
+            // Получаем всех пользователей с ролью "Student", которых нет в excludedIds
+            var studentRoleName = "Student"; // Убедитесь, что такая роль существует
+            var studentUsers = await _userManager.GetUsersInRoleAsync(studentRoleName);
+
+            return studentUsers
+                .Where(u => !excludedIds.Contains(u.Id))
+                .ToList();
         }
     }
 }

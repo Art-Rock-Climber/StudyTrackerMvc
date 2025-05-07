@@ -4,6 +4,9 @@ using stTrackerMVC.Data;
 using stTrackerMVC.Repositories;
 using stTrackerMVC.Services;
 using stTrackerMVC.ViewModelBuilders;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using stTrackerMVC.Models;
 
 namespace stTrackerMVC
 {
@@ -31,6 +34,24 @@ namespace stTrackerMVC
 
             builder.Services.AddHttpsRedirection(options => {
                 options.HttpsPort = 7020;
+            });
+
+            // Identity
+            builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+            // Настройка политик авторизации
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("StudentOnly", policy => policy.RequireRole("Student"));
             });
 
             var app = builder.Build();
@@ -64,6 +85,42 @@ namespace stTrackerMVC
                     var context = services.GetRequiredService<AppDbContext>();
                     context.Database.Migrate();
 
+                    // Добавляем инициализацию ролей и администратора
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    // Создаем роли, если их нет
+                    string[] roleNames = { "Admin", "Student"};
+                    foreach (var roleName in roleNames)
+                    {
+                        if (!await roleManager.RoleExistsAsync(roleName))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole(roleName));
+                        }
+                    }
+
+                    // Создаем администратора, если его нет
+                    var adminEmail = "admin@example.com";
+                    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+                    if (adminUser == null)
+                    {
+                        adminUser = new AppUser
+                        {
+                            UserName = adminEmail,
+                            Email = adminEmail,
+                            FirstName = "Admin",
+                            LastName = "System",
+                            EmailConfirmed = true
+                        };
+
+                        var createResult = await userManager.CreateAsync(adminUser, "Admin123!");
+                        if (createResult.Succeeded)
+                        {
+                            await userManager.AddToRoleAsync(adminUser, "Admin");
+                        }
+                    }
+
+                    // Инициализация курсов
                     var repository = services.GetRequiredService<ICourseRepository>();
                     await repository.InitializeDataAsync();
                 }

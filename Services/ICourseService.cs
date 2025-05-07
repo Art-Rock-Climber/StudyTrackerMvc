@@ -12,5 +12,11 @@ namespace stTrackerMVC.Services
 
         Task<IEnumerable<Course>> GetCoursesWithTaskCountAsync(string? searchTerm = null);
         Task<Course> GetCourseWithTasksAsync(int id);
+
+        Task<bool> IsStudentAssignedToCourseAsync(string studentId, int courseId);
+        Task AssignStudentsToCourseAsync(int courseId, IEnumerable<string> studentIds);
+        Task<IEnumerable<AppUser>> GetStudentsNotInCourseAsync(int courseId);
+
+        IQueryable<Course> GetCoursesForStudent(string studentId);
     }
 }

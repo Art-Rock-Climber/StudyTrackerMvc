@@ -71,9 +71,12 @@
 </div>
 
 <p>
-    <a asp-controller="Task" asp-action="Create" asp-route-courseId="@course.Id" class="btn btn-primary">
-        Добавить задание
-    </a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-controller="Task" asp-action="Create" asp-route-courseId="@course.Id" class="btn btn-primary">
+            Добавить задание
+        </a>
+    }
     <a asp-controller="Course" asp-action="Index" class="btn btn-secondary">
         Назад к курсам
     </a>
@@ -108,9 +111,12 @@
                     <a asp-controller="Task" asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-warning">
                         <i class="bi bi-pencil"></i> Изменить
                     </a>
-                    <a asp-controller="Task" asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
-                        <i class="bi bi-trash"></i> Удалить
-                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Task" asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </a>
+                    }
                 </td>
             </tr>
         }

@@ -46,5 +46,36 @@ namespace stTrackerMVC.Services
         {
             return await _repository.GetCourseByIdAsync(id, includeTasks: true);
         }
+
+
+        public async Task<bool> IsStudentAssignedToCourseAsync(string studentId, int courseId)
+        {
+            return await _repository.IsStudentAssignedAsync(studentId, courseId);
+        }
+
+        public async Task AssignStudentsToCourseAsync(int courseId, IEnumerable<string> studentIds)
+        {
+            // Удаляем старые назначения
+            await _repository.RemoveAllStudentsFromCourseAsync(courseId);
+
+            // Добавляем новых студентов
+            foreach (var studentId in studentIds)
+            {
+                await _repository.AddStudentToCourseAsync(courseId, studentId);
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<AppUser>> GetStudentsNotInCourseAsync(int courseId)
+        {
+            var studentsInCourse = await _repository.GetCourseStudentIdsAsync(courseId);
+            return await _repository.GetStudentsNotInListAsync(studentsInCourse);
+        }
+
+        public IQueryable<Course> GetCoursesForStudent(string studentId)
+        {
+            return _repository.GetCoursesForStudentQueryable(studentId);
+        }
     }
 }
