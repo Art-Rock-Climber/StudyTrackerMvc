@@ -1,4 +1,5 @@
 ﻿using stTrackerMVC.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace stTrackerMVC.ViewModels
 {
@@ -18,8 +19,10 @@ namespace stTrackerMVC.ViewModels
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
         public DateTime Deadline { get; set; }
-        public CourseTaskStatus Status { get; set; }
         public string CourseName { get; set; } = string.Empty;
         public int CourseId { get; set; }
+
+        [Display(Name = "Мой статус")]
+        public CourseTaskStatus Status { get; set; }
     }
 }

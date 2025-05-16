@@ -36,8 +36,8 @@ namespace stTrackerMVC.Services
 
         public async Task UpdateTaskAsync(CourseTask task)
         {
-            if (task.Deadline < DateTime.Today)
-                throw new ArgumentException("Дедлайн не может быть в прошлом");
+            //if (task.Deadline < DateTime.Today)
+            //    throw new ArgumentException("Дедлайн не может быть в прошлом");
 
             await _repository.UpdateAsync(task);
         }
@@ -52,8 +52,7 @@ namespace stTrackerMVC.Services
             var allTasks = await _repository.GetAllAsync();
             return allTasks
                 .Where(t => t.Deadline <= DateTime.Now.AddDays(days) &&
-                            t.Deadline >= DateTime.Now &&
-                            t.Status != CourseTaskStatus.Completed)
+                            t.Deadline >= DateTime.Now)
                 .OrderBy(t => t.Deadline)
                 .ToList();
         }
@@ -61,6 +60,21 @@ namespace stTrackerMVC.Services
         public async Task<IEnumerable<CourseTask>> GetAllTasksAsync()
         {
             return await _repository.GetAllAsync();
+        }
+
+        public async Task UpdateUserTaskStatusAsync(int id, string? userId, CourseTaskStatus status)
+        {
+            await _repository.UpdateUserTaskStatusAsync(id, userId, status);
+        }
+
+        public async Task<UserTask> GetUserTaskAsync(int id, string? userId)
+        {
+            return await _repository.GetUserTaskAsync(id, userId);
+        }
+
+        public async Task<List<UserTask>> GetUserTasksForTasksAsync(string userId, List<int> taskIds)
+        {
+            return await _repository.GetUserTasksForTasksAsync(userId, taskIds);
         }
     }
 }

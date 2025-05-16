@@ -5,7 +5,7 @@
 namespace stTrackerMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Db5 : Migration
+    public partial class FixUserTaskStatus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

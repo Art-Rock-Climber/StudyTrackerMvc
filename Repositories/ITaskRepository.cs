@@ -11,5 +11,8 @@ namespace stTrackerMVC.Repositories
         Task DeleteAsync(int id);
         Task UpdateStatusAsync(int taskId, CourseTaskStatus status);
         Task<List<CourseTask>> GetAllAsync();
+        Task UpdateUserTaskStatusAsync(int taskId, string? userId, CourseTaskStatus status);
+        Task<UserTask?> GetUserTaskAsync(int taskId, string? userId);
+        Task<List<UserTask>> GetUserTasksForTasksAsync(string userId, List<int> taskIds);
     }
 }

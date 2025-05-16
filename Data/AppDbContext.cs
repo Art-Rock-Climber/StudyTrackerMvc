@@ -13,6 +13,7 @@ namespace stTrackerMVC.Data
 
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseTask> Tasks { get; set; }
+        public DbSet<UserTask> UserTasks { get; set; }
         public DbSet<CourseStudent> CourseStudents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,10 +57,6 @@ namespace stTrackerMVC.Data
                       .HasMaxLength(200);
 
                 entity.Property(t => t.Deadline)
-                      .IsRequired();
-
-                entity.Property(t => t.Status)
-                      .HasConversion<string>()
                       .IsRequired();
 
                 // Связь с курсом

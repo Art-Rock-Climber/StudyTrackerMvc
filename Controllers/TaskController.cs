@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,9 @@ namespace stTrackerMVC.Controllers
             var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null) return NotFound();
 
-            var courseTasksVm = await _courseTaskVmBuilder.Build(courseId, statusFilter, sortOrder);
+            // Получаем ID текущего пользователя
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var courseTasksVm = await _courseTaskVmBuilder.Build(courseId, statusFilter, sortOrder, userId);
             
             ViewBag.Course = course;
             return View(courseTasksVm);
@@ -76,7 +79,6 @@ namespace stTrackerMVC.Controllers
                         Title = taskVm.Title,
                         Description = taskVm.Description,
                         Deadline = taskVm.Deadline,
-                        Status = taskVm.Status,
                         CourseId = courseId
                     };
 
@@ -114,23 +116,34 @@ namespace stTrackerMVC.Controllers
         public async Task<IActionResult> Edit(int id, [FromForm] CourseTaskVm taskVm)
         {
             if (id != taskVm.Id) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Получаем ID текущего пользователя
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError("", "Пользователь не аутентифицирован");
+                return View(taskVm);
+            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var task = new CourseTask
+                    // Для администратора - обновляем данные задания
+                    if (User.IsInRole("Admin"))
                     {
-                        Id = taskVm.Id,
-                        Title = taskVm.Title,
-                        Description = taskVm.Description,
-                        Deadline = taskVm.Deadline,
-                        Status = taskVm.Status,
-                        CourseId = taskVm.CourseId
-                    };
+                        var task = new CourseTask
+                        {
+                            Id = taskVm.Id,
+                            Title = taskVm.Title,
+                            Description = taskVm.Description,
+                            Deadline = taskVm.Deadline,
+                            CourseId = taskVm.CourseId
+                        };
+                        await _taskService.UpdateTaskAsync(task);
+                    }
 
-                    await _taskService.UpdateTaskAsync(task);
-                    return RedirectToAction(nameof(ForCourse), new { courseId = task.CourseId });
+                    // Для всех пользователей - обновляем их персональный статус
+                    await _taskService.UpdateUserTaskStatusAsync(taskVm.Id, userId, taskVm.Status);
+                    return RedirectToAction(nameof(ForCourse), new { courseId = taskVm.CourseId });
                 }
                 catch (Exception ex)
                 {

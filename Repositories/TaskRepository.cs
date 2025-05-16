@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using stTrackerMVC.Data;
 using stTrackerMVC.Models;
+using System.Threading.Tasks;
 
 namespace stTrackerMVC.Repositories
 {
@@ -24,10 +25,10 @@ namespace stTrackerMVC.Repositories
             .Include(t => t.Course)
             .Where(t => t.CourseId == courseId);
 
-            if (status.HasValue)
-            {
-                query = query.Where(t => t.Status == status.Value);
-            }
+            //if (status.HasValue)
+            //{
+            //    query = query.Where(t => t.Status == status.Value);
+            //}
 
             return await query
                 .OrderBy(t => t.Deadline)
@@ -61,7 +62,7 @@ namespace stTrackerMVC.Repositories
             var task = await GetByIdAsync(taskId);
             if (task != null)
             {
-                task.Status = status;
+                //task.Status = status;
                 await _context.SaveChangesAsync();
             }
         }
@@ -72,6 +73,45 @@ namespace stTrackerMVC.Repositories
                 .Include(t => t.Course)
                 .OrderBy(t => t.Deadline)
                 .ToListAsync();
+        }
+
+        public async Task UpdateUserTaskStatusAsync(int taskId, string? userId, CourseTaskStatus status)
+        {
+            var userTask = await _context.UserTasks
+                .FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId);
+
+            if (userTask == null)
+            {
+                userTask = new UserTask
+                {
+                    TaskId = taskId,
+                    UserId = userId,
+                    Status = status,
+                    CompletedDate = status == CourseTaskStatus.Completed ? DateTime.Now : null
+                };
+                _context.UserTasks.Add(userTask);
+            }
+            else
+            {
+                userTask.Status = status;
+                //if (status == CourseTaskStatus.Completed)
+                //    userTask.CompletedDate = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<UserTask?> GetUserTaskAsync(int taskId, string? userId)
+        {
+            return await _context.UserTasks
+                .FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId);
+        }
+
+        public async Task<List<UserTask>> GetUserTasksForTasksAsync(string userId, List<int> taskIds)
+        {
+            return await _context.UserTasks
+               .Where(ut => ut.UserId == userId && taskIds.Contains(ut.TaskId))
+               .ToListAsync();
         }
     }
 }

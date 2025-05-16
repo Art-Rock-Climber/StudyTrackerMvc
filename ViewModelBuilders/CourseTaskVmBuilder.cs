@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using stTrackerMVC.Models;
 using stTrackerMVC.Services;
 using stTrackerMVC.ViewModels;
@@ -17,7 +18,8 @@ namespace stTrackerMVC.ViewModelBuilders
             _taskService = taskService;
         }
 
-        public async Task<CourseTasksVm?> Build(int? courseId, string? statusFilter, string? sortOrder = null)
+        public async Task<CourseTasksVm?> Build(int? courseId, string? statusFilter, 
+            string? sortOrder = null, string? userId = null)
         {
             IEnumerable<CourseTask> tasks;
 
@@ -33,10 +35,24 @@ namespace stTrackerMVC.ViewModelBuilders
                 tasks = await _taskService.GetAllTasksAsync();
             }
 
-            // Фильтрация
+            Dictionary<int, CourseTaskStatus> userStatuses = new();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // Получаем UserTasks для всех задач одним запросом
+                var taskIds = tasks.Select(t => t.Id).ToList();
+                var userTasks = await _taskService.GetUserTasksForTasksAsync(userId, taskIds);
+                userStatuses = userTasks.ToDictionary(ut => ut.TaskId, ut => ut.Status);
+            }
+
+            // Применяем фильтрацию по статусу
             if (!string.IsNullOrEmpty(statusFilter))
             {
-                tasks = tasks.Where(t => t.Status.ToString() == statusFilter);
+                if (Enum.TryParse<CourseTaskStatus>(statusFilter, out var status))
+                {
+                    tasks = tasks.Where(t => userStatuses.TryGetValue(t.Id, out var userStatus)
+                                  ? userStatus == status
+                                  : status == CourseTaskStatus.NotStarted);
+                }
             }
 
             // Сортировка
@@ -50,29 +66,49 @@ namespace stTrackerMVC.ViewModelBuilders
                     Title = t.Title,
                     Description = t.Description,
                     Deadline = t.Deadline,
-                    Status = t.Status,
                     CourseName = t.Course?.Name,
-                    CourseId = t.CourseId
+                    CourseId = t.CourseId,
+                    Status = userStatuses.TryGetValue(t.Id, out var status)
+                    ? status
+                    : CourseTaskStatus.NotStarted
                 }).ToList(),
                 CourseId = courseId,
                 AvailableStatuses = Enum.GetNames(typeof(CourseTaskStatus))
             };
         }
 
-        public async Task<CourseTaskVm?> BuildOne(int taskId)
+        public async Task<CourseTaskVm?> BuildOne(int taskId, string? userId = null)
         {
+            // 1. Получаем задание
             var task = await _taskService.GetTaskAsync(taskId);
-            if (task == null) return null;
+            if (task == null)
+            {
+                
+                return null;
+            }
 
+            // 2. Получаем статус пользователя (если userId передан)
+            CourseTaskStatus status = CourseTaskStatus.NotStarted; // Значение по умолчанию
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var userTask = await _taskService.GetUserTaskAsync(taskId, userId);
+                if (userTask != null)
+                {
+                    status = userTask.Status;
+                }
+            }
+
+            // 3. Создаем ViewModel с проверкой на null
             return new CourseTaskVm
             {
                 Id = task.Id,
-                Title = task.Title,
-                Description = task.Description,
+                Title = task.Title ?? string.Empty,
+                Description = task.Description ?? string.Empty,
                 Deadline = task.Deadline,
-                Status = task.Status,
-                CourseName = task.Course?.Name,
-                CourseId = task.CourseId
+                CourseName = task.Course?.Name ?? "Неизвестный курс",
+                CourseId = task.CourseId,
+                Status = status
             };
         }
 
