@@ -123,6 +123,33 @@
     </tbody>
 </table>
 
+<div class="btn-group mb-3">
+    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download"></i> Выгрузить отчет
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" href="@Url.Action("ExportCourseTasks", "Task", new { courseId = course.Id, format = "xlsx" })">
+                <i class="bi bi-file-earmark-excel"></i> Excel (.xlsx)
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="@Url.Action("ExportCourseTasks", "Task", new { courseId = course.Id, format = "docx" })">
+                <i class="bi bi-file-earmark-word"></i> Word (.docx)
+            </a>
+        </li>
+    </ul>
+</div>
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="btn-group mb-3 ms-2">
+        <a href="@Url.Action("ExportOverdueTasks", "Task", new { format = "xlsx" })" class="btn btn-danger">
+            <i class="bi bi-exclamation-triangle"></i> Просроченные задания (Excel)
+        </a>
+    </div>
+}
+
 @section Scripts {
     <script>
         $(function() {

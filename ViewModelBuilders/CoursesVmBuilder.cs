@@ -91,17 +91,21 @@ namespace stTrackerMVC.ViewModelBuilders
             var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null) return null;
 
-            var availableStudents = await _courseService.GetStudentsNotInCourseAsync(courseId);
+            // Получаем всех студентов с ролью "Student"
+            var allStudents = await _userManager.GetUsersInRoleAsync("Student");
+
+            // Получаем ID уже назначенных студентов
+            var assignedStudentIds = await _courseService.GetAssignedStudentIdsAsync(courseId);
 
             return new AssignStudentsViewModel
             {
                 CourseId = course.Id,
                 CourseName = course.Name,
-                AvailableStudents = availableStudents.Select(s => new StudentCheckboxItem
+                AllStudents = allStudents.Select(s => new StudentCheckboxItem
                 {
                     Id = s.Id,
                     Name = $"{s.FirstName} {s.LastName}",
-                    IsSelected = false
+                    IsAssigned = assignedStudentIds.Contains(s.Id)
                 }).ToList()
             };
         }

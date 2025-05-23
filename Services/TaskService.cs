@@ -76,5 +76,25 @@ namespace stTrackerMVC.Services
         {
             return await _repository.GetUserTasksForTasksAsync(userId, taskIds);
         }
+
+        public async Task<List<UserTask>> GetOverdueTasksWithUsersAsync()
+        {
+            return await _repository.GetOverdueTasksWithUsersAsync(DateTime.Now);
+        }
+
+        public async Task CreateUserTaskIfNotExistsAsync(string studentId, int taskId)
+        {
+            var exists = await _repository.UserTaskExistsAsync(studentId, taskId);
+            if (!exists)
+            {
+                var userTask = new UserTask
+                {
+                    UserId = studentId,
+                    TaskId = taskId,
+                    Status = CourseTaskStatus.NotStarted,
+                };
+                await _repository.AddUserTaskAsync(userTask);
+            }
+        }
     }
 }

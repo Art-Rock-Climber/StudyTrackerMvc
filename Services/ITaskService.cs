@@ -15,5 +15,8 @@ namespace stTrackerMVC.Services
         Task UpdateUserTaskStatusAsync(int id, string? userId, CourseTaskStatus status);
         Task<UserTask> GetUserTaskAsync(int id, string? userId);
         Task<List<UserTask>> GetUserTasksForTasksAsync(string userId, List<int> taskIds);
+        Task<List<UserTask>> GetOverdueTasksWithUsersAsync();
+        Task CreateUserTaskIfNotExistsAsync(string studentId, int taskId);
+
     }
 }

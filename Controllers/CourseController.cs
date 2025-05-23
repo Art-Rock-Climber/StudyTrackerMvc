@@ -209,8 +209,8 @@ namespace stTrackerMVC.Controllers
             try
             {
                 // Получаем выбранные ID студентов из AvailableStudents
-                var selectedIds = model.AvailableStudents
-                    .Where(s => s.IsSelected)
+                var selectedIds = model.AllStudents
+                    .Where(s => s.IsAssigned)
                     .Select(s => s.Id)
                     .ToList();
 

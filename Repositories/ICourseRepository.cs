@@ -21,6 +21,8 @@ namespace stTrackerMVC.Repositories
         IQueryable<Course> GetCoursesForStudentQueryable(string studentId);
 
         Task<IEnumerable<AppUser>> GetStudentsNotInListAsync(IEnumerable<string> excludedIds);
-
+        //Task<List<CourseStudent>> GetAllStudentsAsync();
+        //Task<List<string>> GetAssignedStudentIdsAsync(int courseId);
+        //Task UpdateCourseStudentsAsync(int courseId, List<string> assignedStudentIds);
     }
 }

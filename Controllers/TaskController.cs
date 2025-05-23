@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -20,17 +22,20 @@ namespace stTrackerMVC.Controllers
         private readonly ICourseService _courseService;
         private readonly CourseTaskVmBuilder _courseTaskVmBuilder;
         private readonly ILogger<TaskController> _logger;
+        private readonly ReportGeneratorService _reportGenerator;
 
         public TaskController(
             ITaskService taskService,
             ICourseService courseService,
             CourseTaskVmBuilder courseTaskVmBuilder,
-            ILogger<TaskController> logger)
+            ILogger<TaskController> logger,
+            ReportGeneratorService reportGenerator)
         {
             _taskService = taskService;
             _courseService = courseService;
             _courseTaskVmBuilder = courseTaskVmBuilder;
             _logger = logger;
+            _reportGenerator = reportGenerator;
         }
 
         // GET: Task/ForCourse/5
@@ -210,6 +215,69 @@ namespace stTrackerMVC.Controllers
         {
             var tasksVm = await _courseTaskVmBuilder.Build(null, null);
             return View(tasksVm);
+        }
+
+        [HttpGet("Task/ExportCourseTasks/{courseId}")]
+        public async Task<IActionResult> ExportCourseTasks(int courseId, string format)
+        {
+            // Получаем задачи курса
+            var tasks = await _taskService.GetTasksByCourseAsync(courseId);
+
+            // Получаем UserTasks для текущего пользователя
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var taskIds = tasks.Select(t => t.Id).ToList();
+            var userTasks = await _taskService.GetUserTasksForTasksAsync(currentUserId, taskIds);
+
+            byte[] fileContents;
+            string contentType;
+            string fileDownloadName;
+
+            if (format.ToLower() == "xlsx")
+            {
+                fileContents = _reportGenerator.GenerateExcelReport(tasks, currentUserId, userTasks);
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileDownloadName = $"Задания_курса_{courseId}_{DateTime.Now:yyyyMMdd}.xlsx";
+            }
+            else if (format.ToLower() == "docx")
+            {
+                fileContents = _reportGenerator.GenerateWordReport(tasks, currentUserId, userTasks);
+                contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                fileDownloadName = $"Задания_курса_{courseId}_{DateTime.Now:yyyyMMdd}.docx";
+            }
+            else
+            {
+                return BadRequest("Неподдерживаемый формат");
+            }
+
+            return File(fileContents, contentType, fileDownloadName);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Task/ExportOverdueTasks")]
+        public async Task<IActionResult> ExportOverdueTasks(string format)
+        {
+            // Получаем все просроченные задания с пользователями
+            var userTasks = await _taskService.GetOverdueTasksWithUsersAsync();
+
+            // Группируем задачи для отчета
+            var tasks = userTasks.Select(ut => ut.Task).Distinct().ToList();
+
+            byte[] fileContents;
+            string contentType;
+            string fileDownloadName;
+
+            if (format.ToLower() == "xlsx")
+            {
+                fileContents = _reportGenerator.GenerateOverdueExcelReport(tasks, userTasks);
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileDownloadName = $"Просроченные_задания_{DateTime.Now:yyyyMMdd}.xlsx";
+            }
+            else
+            {
+                return BadRequest("Неподдерживаемый формат");
+            }
+
+            return File(fileContents, contentType, fileDownloadName);
         }
     }
 }

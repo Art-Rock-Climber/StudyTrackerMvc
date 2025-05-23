@@ -32,6 +32,8 @@ namespace stTrackerMVC
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<CourseTaskVmBuilder>();
 
+            builder.Services.AddScoped<ReportGeneratorService>();
+
             builder.Services.AddHttpsRedirection(options => {
                 options.HttpsPort = 7020;
             });

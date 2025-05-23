@@ -113,5 +113,34 @@ namespace stTrackerMVC.Repositories
                .Where(ut => ut.UserId == userId && taskIds.Contains(ut.TaskId))
                .ToListAsync();
         }
+
+        public async Task<List<UserTask>> GetOverdueTasksWithUsersAsync(DateTime currentDate)
+        {
+            var adminRoleId = await _context.Roles
+                .Where(r => r.Name == "Admin")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            return await _context.UserTasks
+                .Include(ut => ut.User)
+                .Include(ut => ut.Task)
+                    .ThenInclude(t => t.Course)
+                .Where(ut => ut.Task.Deadline < currentDate &&
+                             !_context.UserRoles.Any(ur => ur.UserId == ut.UserId && ur.RoleId == adminRoleId))
+                .OrderBy(ut => ut.Task.Deadline)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UserTaskExistsAsync(string studentId, int taskId)
+        {
+            return await _context.UserTasks
+                .AnyAsync(ut => ut.UserId == studentId && ut.TaskId == taskId);
+        }
+
+        public async Task AddUserTaskAsync(UserTask userTask)
+        {
+            await _context.UserTasks.AddAsync(userTask);
+            await _context.SaveChangesAsync();
+        }
     }
 }

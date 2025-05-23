@@ -103,6 +103,18 @@ namespace stTrackerMVC.Repositories
                 .AnyAsync(cs => cs.StudentId == studentId && cs.CourseId == courseId);
         }
 
+        public async Task RemoveStudentFromCourseAsync(string studentId, int courseId)
+        {
+            var assignment = await _context.CourseStudents
+                .FirstOrDefaultAsync(cs => cs.StudentId == studentId && cs.CourseId == courseId);
+
+            if (assignment != null)
+            {
+                _context.CourseStudents.Remove(assignment);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task RemoveAllStudentsFromCourseAsync(int courseId)
         {
             var assignments = await _context.CourseStudents
@@ -156,5 +168,18 @@ namespace stTrackerMVC.Repositories
                 .Where(u => !excludedIds.Contains(u.Id))
                 .ToList();
         }
+
+        
+
+        //public async Task<List<CourseStudent>> GetAllStudentsAsync()
+        //{
+        //    var studentUsers = await _userManager.GetUsersInRoleAsync("Student");
+        //    return await studentUsers.ToListAsync();
+        //}
+
+        //public Task UpdateCourseStudentsAsync(int courseId, List<string> assignedStudentIds)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

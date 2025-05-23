@@ -18,5 +18,6 @@ namespace stTrackerMVC.Services
         Task<IEnumerable<AppUser>> GetStudentsNotInCourseAsync(int courseId);
 
         IQueryable<Course> GetCoursesForStudent(string studentId);
+        Task<IEnumerable<string>> GetAssignedStudentIdsAsync(int courseId);
     }
 }

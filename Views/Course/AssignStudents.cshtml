@@ -11,17 +11,22 @@
     <input type="hidden" asp-for="CourseId" />
 
     <div class="form-group">
-        @for (var i = 0; i < Model.AvailableStudents.Count; i++)
+        <h4>Все студенты</h4>
+        @for (var i = 0; i < Model.AllStudents.Count; i++)
         {
             <div class="form-check">
                 <input type="checkbox"
-                       asp-for="AvailableStudents[i].IsSelected"
+                       asp-for="AllStudents[i].IsAssigned"
                        class="form-check-input" />
                 <label class="form-check-label">
-                    @Model.AvailableStudents[i].Name
+                    @Model.AllStudents[i].Name
+                    @if (Model.AllStudents[i].IsAssigned)
+                    {
+                        <span class="badge bg-success">Назначен</span>
+                    }
                 </label>
-                <input type="hidden" asp-for="AvailableStudents[i].Id" />
-                <input type="hidden" asp-for="AvailableStudents[i].Name" />
+                <input type="hidden" asp-for="AllStudents[i].Id" />
+                <input type="hidden" asp-for="AllStudents[i].Name" />
             </div>
         }
     </div>

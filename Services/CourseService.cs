@@ -6,10 +6,12 @@ namespace stTrackerMVC.Services
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _repository;
+        private readonly ITaskService _taskService;
 
-        public CourseService(ICourseRepository repository)
+        public CourseService(ICourseRepository repository, ITaskService taskService)
         {
             _repository = repository;
+            _taskService = taskService;
         }
 
         public async Task<IEnumerable<Course>> GetCoursesAsync()
@@ -55,13 +57,24 @@ namespace stTrackerMVC.Services
 
         public async Task AssignStudentsToCourseAsync(int courseId, IEnumerable<string> studentIds)
         {
+            // Получаем все задания курса
+            var course = await _repository.GetCourseByIdAsync(courseId, includeTasks: true);
+            if (course == null) throw new Exception("Course not found");
+
             // Удаляем старые назначения
             await _repository.RemoveAllStudentsFromCourseAsync(courseId);
 
-            // Добавляем новых студентов
+            // Добавляем новых студентов и создаем UserTasks
             foreach (var studentId in studentIds)
             {
+                // Назначаем студента на курс
                 await _repository.AddStudentToCourseAsync(courseId, studentId);
+
+                // Создаем UserTasks для всех заданий курса
+                foreach (var task in course.Tasks)
+                {
+                    await _taskService.CreateUserTaskIfNotExistsAsync(studentId, task.Id);
+                }
             }
 
             await _repository.SaveChangesAsync();
@@ -76,6 +89,11 @@ namespace stTrackerMVC.Services
         public IQueryable<Course> GetCoursesForStudent(string studentId)
         {
             return _repository.GetCoursesForStudentQueryable(studentId);
+        }
+
+        public async Task<IEnumerable<string>> GetAssignedStudentIdsAsync(int courseId)
+        {
+            return await _repository.GetCourseStudentIdsAsync(courseId);
         }
     }
 }
